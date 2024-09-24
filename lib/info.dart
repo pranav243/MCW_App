@@ -34,7 +34,7 @@ class _InfoPageState extends State<InfoPage> {
     'Prior hand surgery': false,
     'Other neurological condition': false,
   };
-  String otherNeurologicalCondition = '';
+  String otherNeurologicalCondition = 'None';
 
   // History
   Map<String, bool> history = {
@@ -429,7 +429,7 @@ class _InfoPageState extends State<InfoPage> {
               pw.Text(
                   'Prior Hand Surgery: ${comorbidities['Prior hand surgery'] == true ? "Yes" : "No"}'),
               pw.Text(
-                  'Other Neurological Condition: ${otherNeurologicalCondition ?? "None"}'),
+                  'Other Neurological Condition: $otherNeurologicalCondition'),
 
               pw.SizedBox(height: 20),
 
