@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'info.dart';
+import 'quiz.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
       ),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const InfoPage(),
+      home:  QuizPage(),
 
     );
   }
