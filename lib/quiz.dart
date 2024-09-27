@@ -435,13 +435,66 @@ final List<Map<String, Object>> _questions = [
 //   final Uint8List fontData = data.buffer.asUint8List();
 //   return pw.Font.ttf(fontData as ByteData); // Create Font object from Uint8List
 // }
+// Future<void> _generatePdf() async {
+//   final pdf = pw.Document();
+
+//   // Use the loaded font if necessary, e.g., uncomment if you have loaded the font.
+//   // final font = await loadFont('assets/fonts/OpenSans-Regular.ttf'); 
+
+//   // Accumulate all text for a single page
+//   List<pw.Widget> questionWidgets = [];
+
+//   for (int i = 0; i < _questions.length; i++) {
+//     final question = _questions[i] as Map<String, dynamic>;
+//     final selectedOptionIndex = _selectedOptions[i];
+
+//     // Safely access the options
+//     final options = question['options'] as List<dynamic>?;
+
+//     // Check if the selected option index is valid
+//     String option = selectedOptionIndex != null && options != null && 
+//                     selectedOptionIndex >= 0 && 
+//                     selectedOptionIndex < options.length
+//                     ? options[selectedOptionIndex].toString() 
+//                     : 'No answer selected';
+
+//     // Accumulate widgets for each question with left alignment
+//     questionWidgets.addAll([
+//       pw.Align(
+//         alignment: pw.Alignment.centerLeft, // Align text to the left
+//         child: pw.Text(question['section'] as String, style: pw.TextStyle(fontSize: 16)),
+//       ),
+//       pw.Align(
+//         alignment: pw.Alignment.centerLeft, // Align text to the left
+//         child: pw.Text(question['question'] as String, style: pw.TextStyle(fontSize: 14)),
+//       ),
+//       pw.Align(
+//         alignment: pw.Alignment.centerLeft, // Align text to the left
+//         child: pw.Text('Your answer: $option', style: pw.TextStyle(fontSize: 12)),
+//       ),
+//       pw.SizedBox(height: 20), // Space between questions
+//     ]);
+//   }
+
+//   // Add a single page with all questions
+//   pdf.addPage(
+//     pw.Page(
+//       build: (pw.Context context) => pw.Column(
+//         children: questionWidgets,
+//       ),
+//     ),
+//   );
+
+//   // Save the PDF file
+//   final String directory = (await getExternalStorageDirectory())!.path;
+//   final file = File('$directory/quiz_response.pdf');
+//   await file.writeAsBytes(await pdf.save());
+//   print('PDF saved at: ${file.path}');
+// }
 Future<void> _generatePdf() async {
   final pdf = pw.Document();
 
-  // Use the loaded font if necessary, e.g., uncomment if you have loaded the font.
-  // final font = await loadFont('assets/fonts/OpenSans-Regular.ttf'); 
-
-  // Accumulate all text for a single page
+  // Accumulate all text for multiple pages
   List<pw.Widget> questionWidgets = [];
 
   for (int i = 0; i < _questions.length; i++) {
@@ -452,45 +505,67 @@ Future<void> _generatePdf() async {
     final options = question['options'] as List<dynamic>?;
 
     // Check if the selected option index is valid
-    String option = selectedOptionIndex != null && options != null && 
-                    selectedOptionIndex >= 0 && 
-                    selectedOptionIndex < options.length
-                    ? options[selectedOptionIndex].toString() 
-                    : 'No answer selected';
+    String option = selectedOptionIndex != null &&
+            options != null &&
+            selectedOptionIndex >= 0 &&
+            selectedOptionIndex < options.length
+        ? options[selectedOptionIndex].toString()
+        : 'No answer selected';
 
     // Accumulate widgets for each question with left alignment
     questionWidgets.addAll([
       pw.Align(
         alignment: pw.Alignment.centerLeft, // Align text to the left
-        child: pw.Text(question['section'] as String, style: pw.TextStyle(fontSize: 16)),
+        child: pw.Text(
+          question['section'] as String,
+          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+        ),
       ),
+      pw.SizedBox(height: 5), // Space between section and question
+
       pw.Align(
         alignment: pw.Alignment.centerLeft, // Align text to the left
-        child: pw.Text(question['question'] as String, style: pw.TextStyle(fontSize: 14)),
+        child: pw.Text(
+          question['question'] as String,
+          style: pw.TextStyle(fontSize: 14),
+        ),
       ),
+      pw.SizedBox(height: 5), // Space between question and answer
+
       pw.Align(
         alignment: pw.Alignment.centerLeft, // Align text to the left
-        child: pw.Text('Your answer: $option', style: pw.TextStyle(fontSize: 12)),
+        child: pw.Text(
+          'Your answer: $option',
+          style: pw.TextStyle(fontSize: 12),
+        ),
       ),
       pw.SizedBox(height: 20), // Space between questions
     ]);
   }
 
-  // Add a single page with all questions
+  // Add content across multiple pages
   pdf.addPage(
-    pw.Page(
-      build: (pw.Context context) => pw.Column(
-        children: questionWidgets,
-      ),
+    pw.MultiPage(
+      pageFormat: PdfPageFormat.a4,
+      margin: pw.EdgeInsets.all(32),
+      build: (pw.Context context) {
+        return questionWidgets;
+      },
     ),
   );
 
-  // Save the PDF file
+  // Save the PDF file to the device's external storage
   final String directory = (await getExternalStorageDirectory())!.path;
   final file = File('$directory/quiz_response.pdf');
   await file.writeAsBytes(await pdf.save());
   print('PDF saved at: ${file.path}');
+
+  // Notify the user
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('PDF saved: ${file.path}')),
+  );
 }
+
   void _showUnansweredAlert() {
     showDialog(
       context: context,
@@ -517,6 +592,7 @@ Future<void> _generatePdf() async {
     return Scaffold(
       appBar: AppBar(
         title: Text('Quiz'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

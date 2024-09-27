@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 
@@ -137,7 +138,7 @@ class _InfoPageState extends State<InfoPage> {
             ),
             TextFormField(
               decoration: const InputDecoration(
-                  labelText: 'Duration of Symptoms (in months)'),
+                  labelText: 'Duration of Symptoms (in days)'),
               keyboardType: TextInputType.number,
               onChanged: (value) => durationOfSymptoms = int.parse(value),
             ),
@@ -388,124 +389,137 @@ class _InfoPageState extends State<InfoPage> {
   Future<void> generatePdf() async {
     final pdf = pw.Document();
 
+    // Use pw.MultiPage to automatically handle multiple pages
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text('Patient Information',
-                  style: pw.TextStyle(
-                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 20),
+          return [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Patient Information',
+                    style: pw.TextStyle(
+                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
 
-              // Study ID and basic details
-              pw.Text('Study ID: $studyID'),
-              pw.Text('Age: $age'),
-              pw.Text('Sex: $sex'),
-              pw.Text('Duration of Symptoms: $durationOfSymptoms days'),
-              pw.Text('Prior Cervical Surgery: $priorSurgery'),
-              if (priorSurgery) pw.Text('Date of Surgery: $dateOfSurgery'),
-              pw.SizedBox(height: 20),
+                // Study ID and basic details
+                pw.Text('Study ID: $studyID'),
+                pw.Text('Age: $age'),
+                pw.Text('Sex: $sex'),
+                pw.Text('Duration of Symptoms: $durationOfSymptoms days'),
+                pw.Text('Prior Cervical Surgery: $priorSurgery'),
+                if (priorSurgery) pw.Text('Date of Surgery: $dateOfSurgery'),
+                pw.SizedBox(height: 20),
 
-              // Comorbidities Section
-              pw.Text(
-                  'Chiari Malformation: ${comorbidities['Chiari malformation'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Multiple Sclerosis: ${comorbidities['Multiple sclerosis'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Peripheral Neuropathy: ${comorbidities['Peripheral neuropathy'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Diabetes: ${comorbidities['Diabetes'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Stroke: ${comorbidities['Stroke'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'B12 Deficiency: ${comorbidities['B12 deficiency'] == true ? "Yes" : "No"}'),
+                // Comorbidities Section
+                pw.Text('Comorbidities',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
 
-              pw.Text(
-                  'Prior Lumbar Spine Surgery: ${comorbidities['Prior lumbar spine surgery'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Arthritis of the Hand: ${comorbidities['Arthritis of the hand'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Prior Hand Surgery: ${comorbidities['Prior hand surgery'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Other Neurological Condition: $otherNeurologicalCondition'),
+                pw.Text(
+                    'Chiari Malformation: ${comorbidities['Chiari malformation'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Multiple Sclerosis: ${comorbidities['Multiple sclerosis'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Peripheral Neuropathy: ${comorbidities['Peripheral neuropathy'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Diabetes: ${comorbidities['Diabetes'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Stroke: ${comorbidities['Stroke'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'B12 Deficiency: ${comorbidities['B12 deficiency'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Prior Lumbar Spine Surgery: ${comorbidities['Prior lumbar spine surgery'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Arthritis of the Hand: ${comorbidities['Arthritis of the hand'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Prior Hand Surgery: ${comorbidities['Prior hand surgery'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Other Neurological Condition: $otherNeurologicalCondition'),
+                pw.SizedBox(height: 20),
 
-              pw.SizedBox(height: 20),
+                // History Section
+                pw.Text('History',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
 
-              // History Section
-              pw.Text('History',
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text(
-                  'Gait Instability and/or Falls: ${history['Gait instability and/or falls'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Clumsiness: ${history['Clumsiness'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Neck Pain: ${history['Neck pain'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Numbness in Fingers and/or Toes: ${history['Numbness in fingers and/or toes'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Weakness in Arms and/or Legs: ${history['Weakness in arms and/or legs'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Urinary Urgency/Frequency: ${history['Urinary urgency/frequency'] == true ? "Yes" : "No"}'),
-              pw.SizedBox(height: 20),
+                pw.Text(
+                    'Gait Instability and/or Falls: ${history['Gait instability and/or falls'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Clumsiness: ${history['Clumsiness'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Neck Pain: ${history['Neck pain'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Numbness in Fingers and/or Toes: ${history['Numbness in fingers and/or toes'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Weakness in Arms and/or Legs: ${history['Weakness in arms and/or legs'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Urinary Urgency/Frequency: ${history['Urinary urgency/frequency'] == true ? "Yes" : "No"}'),
+                pw.SizedBox(height: 20),
 
-              // Physical Exam Section
-              pw.Text('Physical Exam',
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text(
-                  'Increased Tone in Limbs: ${physicalExam['Increased tone in upper or lower limbs'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Muscular Weakness: ${physicalExam['Muscular weakness'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Decreased Sensation: ${physicalExam['Decreased sensation to light touch or vibration'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Hyperreflexia in Upper Limbs: ${physicalExam['Hyperreflexia in upper limbs'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Hyperreflexia in Lower Limbs: ${physicalExam['Hyperreflexia in lower limbs'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Pathological Reflexes: ${physicalExam['Pathological reflexes'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Ankle Clonus: ${physicalExam['Ankle clonus'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Inability to Tandem Walk: ${physicalExam['Inability to tandem walk'] == true ? "Yes" : "No"}'),
-              pw.Text(
-                  'Positive Romberg Sign: ${physicalExam['Positive Romberg sign'] == true ? "Yes" : "No"}'),
+                // Physical Exam Section
+                pw.Text('Physical Exam',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
 
-              pw.SizedBox(height: 20),
+                pw.Text(
+                    'Increased Tone in Limbs: ${physicalExam['Increased tone in upper or lower limbs'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Muscular Weakness: ${physicalExam['Muscular weakness'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Decreased Sensation: ${physicalExam['Decreased sensation to light touch or vibration'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Hyperreflexia in Upper Limbs: ${physicalExam['Hyperreflexia in upper limbs'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Hyperreflexia in Lower Limbs: ${physicalExam['Hyperreflexia in lower limbs'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Pathological Reflexes: ${physicalExam['Pathological reflexes'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Ankle Clonus: ${physicalExam['Ankle clonus'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Inability to Tandem Walk: ${physicalExam['Inability to tandem walk'] == true ? "Yes" : "No"}'),
+                pw.Text(
+                    'Positive Romberg Sign: ${physicalExam['Positive Romberg sign'] == true ? "Yes" : "No"}'),
 
-              // MRI Features Section
-              pw.Text('MRI Features',
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.Text('MRI Date: $mriDate'),
-              pw.Text('Compression Level: $compressionLevel'),
-              pw.Text('da (mm): $da'),
-              pw.Text('db (mm): $db'),
-              pw.Text('AVG (da + db) / 2: ${(da + db) / 2} mm'),
-              pw.Text('di (mm): $di'),
-              pw.Text('MSCC: $mscc'),
-              pw.Text('Sag Diam (mm): $sagDiam'),
-              pw.Text('Transv Diam (mm): $transvDiam'),
-              pw.Text('Compression Ratio: $compressionRatio'),
-              pw.Text('Compressed Area (mm^2): $compressedArea'),
-              pw.Text('HI: ${HI ? "Yes" : "No"}'),
-              pw.Text('Type 1: ${type1 ? "Yes" : "No"}'),
-              pw.Text('Type 2: ${type2 ? "Yes" : "No"}'),
-            ],
-          );
+                pw.SizedBox(height: 20),
+
+                // MRI Features Section
+                pw.Text('MRI Features',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+
+                pw.Text('MRI Date: $mriDate'),
+                pw.Text('Compression Level: $compressionLevel'),
+                pw.Text('da (mm): $da'),
+                pw.Text('db (mm): $db'),
+                pw.Text('AVG (da + db) / 2: ${(da + db) / 2} mm'),
+                pw.Text('di (mm): $di'),
+                pw.Text('MSCC: $mscc'),
+                pw.Text('Sag Diam (mm): $sagDiam'),
+                pw.Text('Transv Diam (mm): $transvDiam'),
+                pw.Text('Compression Ratio: $compressionRatio'),
+                pw.Text('Compressed Area (mm^2): $compressedArea'),
+                pw.Text('HI: ${HI ? "Yes" : "No"}'),
+                pw.Text('Type 1: ${type1 ? "Yes" : "No"}'),
+                pw.Text('Type 2: ${type2 ? "Yes" : "No"}'),
+              ],
+            ),
+          ];
         },
       ),
     );
 
-    // Save the PDF to the device's documents directory
-    // final directory = await getApplicationDocumentsDirectory();
+    // Save the PDF to the device's external storage directory
     final String directory = (await getExternalStorageDirectory())!.path;
     final file = File('$directory/patient_info_$studyID.pdf');
     await file.writeAsBytes(await pdf.save());
-    print(file.path);
+    print('PDF saved at ${file.path}');
 
     // Show a message to the user
     ScaffoldMessenger.of(context).showSnackBar(
