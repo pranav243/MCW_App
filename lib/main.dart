@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'info.dart';
 import 'quiz.dart';
+import 'handtracker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,8 +29,9 @@ class MyApp extends StatelessWidget {
       ),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
       // home:  QuizPage(),
-      home: const InfoPage(),
 
+      // home: const InfoPage(),
+      home: HandTrackingPage(),
     );
   }
 }
